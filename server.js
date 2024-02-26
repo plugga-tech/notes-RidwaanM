@@ -65,3 +65,55 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+// Endpoint för att hämta alla dokument för en användare
+app.get('/documents', verifyToken, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const [rows] = await db.promise().query('SELECT * FROM documents WHERE user_id = ?', [userId]);
+      res.json(rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  // Endpoint för att skapa ett nytt dokument
+  app.post('/documents', verifyToken, async (req, res) => {
+    try {
+      const { content } = req.body;
+      const userId = req.userId;
+      await db.promise().query('INSERT INTO documents (content, user_id) VALUES (?, ?)', [content, userId]);
+      res.status(201).json({ message: 'Document created successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  // Endpoint för att uppdatera ett befintligt dokument
+  app.put('/documents/:id', verifyToken, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { content } = req.body;
+      await db.promise().query('UPDATE documents SET content = ? WHERE id = ?', [content, id]);
+      res.json({ message: 'Document updated successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  // Endpoint för att ta bort ett dokument
+  app.delete('/documents/:id', verifyToken, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await db.promise().query('DELETE FROM documents WHERE id = ?', [id]);
+      res.json({ message: 'Document deleted successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
