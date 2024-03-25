@@ -57,8 +57,55 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// CRUD-operationer för dokument
-// Implementera enligt behov
+// Skapa användare
+app.post('/users', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.promise().query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Hämta alla användare
+app.get('/users', async (req, res) => {
+  try {
+    const [rows] = await db.promise().query('SELECT * FROM users');
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Uppdatera användare
+app.put('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.promise().query('UPDATE users SET username = ?, password = ? WHERE id = ?', [username, hashedPassword, id]);
+    res.json({ message: 'User updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Ta bort användare
+app.delete('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.promise().query('DELETE FROM users WHERE id = ?', [id]);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // Starta servern
 const PORT = process.env.PORT || 5000;

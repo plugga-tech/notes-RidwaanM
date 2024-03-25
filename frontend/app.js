@@ -49,7 +49,84 @@ function Home({ token }) {
   return (
     <div>
       <h2>Document List</h2>
-      {/* Implementera dokumentlista och CRUD-operationer här */}
+      {import React, { useState, useEffect } from 'react';
+      import axios from 'axios';
+
+function App() {
+  const [documents, setDocuments] = useState([]);
+  const [newDocumentTitle, setNewDocumentTitle] = useState('');
+  const [newDocumentContent, setNewDocumentContent] = useState('');
+
+  useEffect(() => {
+    fetchDocuments()
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/documents');
+      setDocuments(response.data);
+    } catch (error) {
+      console.error(error)
+    }
+  };
+
+  const createDocument = async () => {
+    try {
+      await axios.post('http://localhost:5000/documents', {
+        title: newDocumentTitle,
+        content: newDocumentContent
+      });
+      setNewDocumentTitle('');
+      setNewDocumentContent('');
+      fetchDocuments();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteDocument = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/documents/${id}`);
+      fetchDocuments();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Document Management System</h1>
+      <h2>Create Document</h2>
+      <input
+        type="text"
+        value={newDocumentTitle}
+        onChange={(e) => setNewDocumentTitle(e.target.value)}
+        placeholder="Enter title"
+      />
+      <textarea
+        value={newDocumentContent}
+        onChange={(e) => setNewDocumentContent(e.target.value)}
+        placeholder="Enter content"
+      ></textarea>
+      <button onClick={createDocument}>Create Document</button>
+
+      <h2>Document List</h2>
+      <ul>
+        {documents.map((document) => (
+          <li key={document.id}>
+            <div>
+              <strong>{document.title}</strong>: {document.content}
+              <button onClick={() => deleteDocument(document.id)}>Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+}
     </div>
   );
 }
